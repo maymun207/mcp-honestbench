@@ -60,8 +60,13 @@ jobs:
 
       # Prove the built image actually serves — a container that builds but does
       # not answer /health is a green CI job attached to a dead instrument.
+      #
+      # RUNS ON EVERY EVENT, deliberately. This check was first written to skip
+      # on `push`, which would have exempted the one path that PUBLISHES the
+      # image. The defect it exists to catch (a CMD pointing at a file the build
+      # never emitted) was real, survived a clean `tsc` and 43 green tests, and
+      # was found only by running the container.
       - name: smoke-test the image
-        if: github.event_name != 'push'
         run: |
           docker build -t honestbench:ci .
           docker run -d --name hb -p 8931:8931 honestbench:ci
