@@ -7,3 +7,10 @@ test
 runlog.jsonl
 runs
 vitest.config.ts
+
+# The SERVERLESS entry. The container uses src/index.ts + listen(); these must
+# never enter the image, so the two hosting paths cannot drift into each other.
+api
+public
+vercel.json
+tsconfig.api.json

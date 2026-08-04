@@ -23,6 +23,10 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run build
+      # The Vercel entry is compiled by Vercel at deploy time, not by `build`.
+      # Without this step it would be the one file nothing typechecks — and it is
+      # the file whose failure mode is a 500 on every request.
+      - run: npm run typecheck:api
       - run: npm test
 
       # The two hashes that identify any run made from this commit, printed into

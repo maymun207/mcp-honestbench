@@ -13,7 +13,9 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "declaration": false,
+    // ON so `api/index.ts` (the Vercel entry) imports the built output WITH types
+    // rather than as untyped JS. The container path is unaffected.
+    "declaration": true,
     "sourceMap": true
   },
   "include": ["src/**/*.ts"],

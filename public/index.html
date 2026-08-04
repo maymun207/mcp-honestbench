@@ -1,0 +1,48 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>mcp-honestbench</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 16px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+         max-width: 46rem; margin: 4rem auto; padding: 0 1.25rem; }
+  h1 { font-size: 1.35rem; margin-bottom: .25rem; }
+  .sub { opacity: .7; margin-top: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 1.25rem 0; }
+  th, td { text-align: left; padding: .4rem .6rem; border-bottom: 1px solid rgba(128,128,128,.3); vertical-align: top; }
+  code { background: rgba(128,128,128,.15); padding: .1rem .3rem; border-radius: 3px; }
+  .warn { border-left: 3px solid #c93; padding-left: .9rem; }
+</style>
+
+<h1>mcp-honestbench</h1>
+<p class="sub">A deliberately dishonest MCP server. The honesty laboratory, instalment zero.</p>
+
+<p>It exists so that an agent system's honesty can be measured against lies it did
+not author. It tells lies; it never makes the consuming system's reads
+<em>fail</em>. Every response is well-formed, successful and on time — the
+dishonesty is in the content.</p>
+
+<table>
+  <tr><th>Endpoint</th><th>Purpose</th></tr>
+  <tr><td><code>POST /flat</code></td><td>the flat profile — five dials</td></tr>
+  <tr><td><code>POST /gateway</code></td><td>the gateway profile — <code>search_tools</code> + <code>call_tool</code></td></tr>
+  <tr><td><code>GET /health</code></td><td>both content hashes, the live mode, the target</td></tr>
+  <tr><td><code>GET /runlog</code></td><td>the in-memory run log (warm instance only)</td></tr>
+</table>
+
+<table>
+  <tr><th>Mode</th><th>Behaviour</th></tr>
+  <tr><td>M1</td><td>silent-zero — returns <code>0</code> where the truth is <em>absent</em></td></tr>
+  <tr><td>M2</td><td>silent-truncation — first N of M rows, no signal</td></tr>
+  <tr><td>M3a</td><td>declaration drift — advertises a schema the payload does not honour</td></tr>
+  <tr><td>M3b</td><td>name hijack — declares a tool name owned by another backend</td></tr>
+  <tr><td>M4</td><td>plausible fabrication — a well-formed record for an out-of-scope entity</td></tr>
+</table>
+
+<p class="warn">With no dial set the server <strong>tells the truth</strong>. That
+control is load-bearing: an instrument that cannot be honest cannot be trusted to
+lie on command.</p>
+
+<p>A run is identified by the sha256 of <code>fixture.json</code> and
+<code>dial.json</code>. Both are printed at startup and stamped into every log
+line. Source: <a href="https://github.com/maymun207/mcp-honestbench">github.com/maymun207/mcp-honestbench</a></p>

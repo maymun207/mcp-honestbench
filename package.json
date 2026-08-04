@@ -15,10 +15,11 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
-    "lint": "oxlint src test",
+    "lint": "oxlint src test api",
     "test": "vitest run",
     "test:watch": "vitest",
-    "hash": "tsx src/cli/hash.ts"
+    "hash": "tsx src/cli/hash.ts",
+    "typecheck:api": "tsc -p tsconfig.api.json"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.29.0",

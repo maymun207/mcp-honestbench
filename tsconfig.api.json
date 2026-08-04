@@ -1,0 +1,12 @@
+{
+  // Typechecks the Vercel entry against the BUILT dist (which carries .d.ts).
+  // Vercel compiles api/index.ts itself at deploy time, so without this the
+  // serverless entry would be the one file in the repo nothing typechecks —
+  // and it is the file whose failure mode is a 500 on every request.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "."
+  },
+  "include": ["api/**/*.ts"]
+}

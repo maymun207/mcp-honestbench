@@ -144,6 +144,49 @@ can have.
 
 ---
 
+## Hosting — two entries, one instrument
+
+| Path | Entry | Mechanism |
+|---|---|---|
+| container | `src/index.ts` + `Dockerfile` | `createApp(...).listen(port)` |
+| serverless (Vercel) | `api/index.ts` + `vercel.json` | **default-exports** the same app |
+
+`src/index.ts` and the `Dockerfile` are byte-unchanged by the serverless work,
+and `.dockerignore` excludes `api/`, `public/`, `vercel.json` so the two paths
+cannot drift into each other. The container smoke test in CI proves they coexist.
+
+Vercel's Node runtime requires a module whose **default export** is the handler;
+a module that opens its own port fails with
+`Invalid export found in module "…/src/server.js"` and 500s on every request.
+That is the whole reason `api/index.ts` exists — it changes no behaviour.
+
+### Two serverless constraints, named rather than discovered mid-run
+
+**1 · The run log is not durable on Vercel.** A serverless invocation has no
+writable project filesystem and no memory that survives to the next call. The
+entry points the log at `/tmp`, which is writable, so a *warm* instance
+accumulates a usable log — but a cold start begins empty and nothing is
+guaranteed to persist.
+
+This does not break scoring, because the server is **deterministic**: given
+`fixture.json`, `dial.json` and the call, the served value is a pure function,
+and both files are hash-pinned. The scorer's authoritative inputs are therefore
+**the two hashes plus the consuming system's own telemetry** (which records that
+the call happened); `GET /runlog` is a warm-instance convenience, not the system
+of record. Tracked as `HONESTBENCH-RUNLOG-DURABILITY-1` — it retires only if
+reconstruction ever proves insufficient, and only then does a durable sink get
+built.
+
+**2 · Deployment protection will silently block a mount.** As read on
+2026-08-04 the Vercel project has **Vercel Authentication (SSO) enabled** for
+`all_except_custom_domains` (password protection and trusted IPs are off). Any
+client reaching a `*.vercel.app` URL gets **401**, which looks exactly like a
+broken server. Two ways past it, both an owner decision and neither taken here:
+disable Vercel Authentication for this project, or attach a custom domain (which
+that setting already exempts).
+
+---
+
 ## Scoring — frozen before any result existed
 
 Three axes, deterministic, no LLM judge:
