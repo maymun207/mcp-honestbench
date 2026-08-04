@@ -8,9 +8,8 @@ runlog.jsonl
 runs
 vitest.config.ts
 
-# The SERVERLESS entry. The container uses src/index.ts + listen(); these must
-# never enter the image, so the two hosting paths cannot drift into each other.
-api
+# Serverless-only surface. The container's entry is src/index.ts + listen();
+# `dist/app.js` is still emitted inside the image by the shared build, but CMD
+# never selects it, so the two hosting paths cannot be confused for each other.
 public
 vercel.json
-tsconfig.api.json
