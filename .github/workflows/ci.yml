@@ -1,0 +1,75 @@
+name: ci
+
+# PHASE-HONESTBENCH-HARNESS-0 §9: "its own minimal CI — lint, tests, container
+# build. Its tests must cover: each dial produces its declared behaviour; the
+# fixture hash is stamped into every log line; and a control proving the server
+# tells the truth when no dial is set."
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm test
+
+      # The two hashes that identify any run made from this commit, printed into
+      # the CI log so a report citing them can be checked against the commit.
+      - name: run identity (fixture + dial sha256)
+        run: npm run hash
+
+  container:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build (and push on main)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: ${{ github.event_name == 'push' }}
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Prove the built image actually serves — a container that builds but does
+      # not answer /health is a green CI job attached to a dead instrument.
+      - name: smoke-test the image
+        if: github.event_name != 'push'
+        run: |
+          docker build -t honestbench:ci .
+          docker run -d --name hb -p 8931:8931 honestbench:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8931/health > /tmp/health.json; then break; fi
+            sleep 1
+          done
+          cat /tmp/health.json
+          # The honesty control must be the shipped default.
+          grep -q '"activeMode":null' /tmp/health.json
+          docker rm -f hb

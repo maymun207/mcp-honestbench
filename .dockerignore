@@ -1,0 +1,9 @@
+node_modules
+dist
+test
+.git
+.github
+*.md
+runlog.jsonl
+runs
+vitest.config.ts

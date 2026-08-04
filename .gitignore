@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.log
+
+# The run log is an ARTEFACT of a run, not source. A run's identity is the two
+# hashes (fixture.json + dial.json), which ARE committed; the log it produced is
+# attached to the report that cites it, never carried in the working tree.
+runlog.jsonl
+runs/

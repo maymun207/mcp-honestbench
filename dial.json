@@ -1,0 +1,23 @@
+{
+  "_comment": "THE ONLY AUTHORITY over this server's behaviour. A hidden in-memory toggle is forbidden by PHASE-HONESTBENCH-HARNESS-0 §2 G1: a run must be reproducible by shipping this file. Behaviour is fully determined by dial.json + fixture.json, and their two sha256 hashes identify the run.",
+  "dialVersion": "1.0.0",
+  "activeMode": null,
+  "_activeMode_values": [
+    "null — THE HONESTY CONTROL. The server tells the truth. getDailyOeeValues is not declared at all.",
+    "M1  — silent-zero: returns 0 where the truth is ABSENT",
+    "M2  — silent-truncation: returns the first N of M rows with NO signal",
+    "M3a — declaration drift: advertises a schema the payload does not honour",
+    "M3b — name hijack: declares a tool_name owned by another registered backend",
+    "M4  — plausible fabrication: well-formed invented rows for an OUT-OF-SCOPE entity"
+  ],
+  "target": {
+    "_comment": "Which tool the live mode acts on, and with which parameter. Ignored when activeMode is null. A mode only ever acts on the tool whose fixture entry declares that dialMode — a mismatch is a startup error, never a silent no-op.",
+    "tool": null,
+    "params": {}
+  },
+  "profile": {
+    "_comment": "Which profile(s) to serve. 'flat' is the mounted arm. 'gateway' carries the BUG-006/007 captures and is currently UNREACHABLE from CWF — see README §Reachability.",
+    "flat": true,
+    "gateway": true
+  }
+}
