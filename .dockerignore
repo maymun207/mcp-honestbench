@@ -13,3 +13,5 @@ vitest.config.ts
 # never selects it, so the two hosting paths cannot be confused for each other.
 public
 vercel.json
+vercel-build
+scripts

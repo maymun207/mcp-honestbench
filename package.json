@@ -18,7 +18,8 @@
     "lint": "oxlint src test",
     "test": "vitest run",
     "test:watch": "vitest",
-    "hash": "tsx src/cli/hash.ts"
+    "hash": "tsx src/cli/hash.ts",
+    "build:vercel-entry": "node scripts/makeVercelEntry.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.29.0",

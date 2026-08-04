@@ -7,3 +7,6 @@ dist/
 # attached to the report that cites it, never carried in the working tree.
 runlog.jsonl
 runs/
+
+# Generated Vercel output directory (see scripts/makeVercelEntry.mjs)
+vercel-build/
