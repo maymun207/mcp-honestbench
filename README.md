@@ -146,19 +146,39 @@ can have.
 
 ## Hosting — two entries, one instrument
 
+Live: **https://mcp-honestbench.vercel.app**
+
 | Path | Entry | Mechanism |
 |---|---|---|
 | container | `src/index.ts` + `Dockerfile` | `createApp(...).listen(port)` |
-| serverless (Vercel) | `api/index.ts` + `vercel.json` | **default-exports** the same app |
+| serverless (Vercel) | `vercel-build/index.js` (generated) → `src/app.ts` | **default-exports** the same app |
 
-`src/index.ts` and the `Dockerfile` are byte-unchanged by the serverless work,
-and `.dockerignore` excludes `api/`, `public/`, `vercel.json` so the two paths
-cannot drift into each other. The container smoke test in CI proves they coexist.
+`src/index.ts`, `src/server.ts` and the `Dockerfile` are **byte-unchanged** by
+the serverless work. The container smoke test in CI proves the two coexist.
 
-Vercel's Node runtime requires a module whose **default export** is the handler;
-a module that opens its own port fails with
-`Invalid export found in module "…/src/server.js"` and 500s on every request.
-That is the whole reason `api/index.ts` exists — it changes no behaviour.
+### What the Vercel preset actually requires
+
+Four constraints, each found in a build or runtime log rather than assumed — they
+are recorded because every one of them fails in a way that looks like a bug in
+this server:
+
+1. **A module that opens its own port is not a valid entrypoint.** `listen()` is
+   supported for a plain Node server, but the Express preset wants a default
+   export, and it fails with `Invalid export found in module "…"`.
+2. **The entrypoint is chosen BY FILENAME from the output directory** (`app.*`,
+   `index.*`, `server.*`, `src/*`) — an `api/` folder is never consulted, so the
+   serverless-functions convention does not apply here at all. Our own
+   `src/server.ts` → `dist/server.js` was a candidate and won, which is why the
+   output directory now holds exactly one.
+3. **The entrypoint must import `express` directly.** A bare re-export fails with
+   `No entrypoint found which imports express`.
+4. **The tracer is static, so `readFileSync` targets are not shipped.**
+   `fixture.json` and `dial.json` are copied beside the generated entry at build
+   time, verified byte-identical (a reformat would silently change the sha256
+   that identifies the run), and located via `HONESTBENCH_ROOT`.
+
+All four are handled by `scripts/makeVercelEntry.mjs`, which is the only place
+they live.
 
 ### Two serverless constraints, named rather than discovered mid-run
 
