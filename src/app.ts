@@ -37,7 +37,15 @@ import { createApp } from './server.js';
  * guessing one and failing opaquely at load with a stack trace about JSON.
  */
 function resolveRoot(): string {
-    const candidates = [REPO_ROOT, process.cwd(), resolve(REPO_ROOT, '..'), resolve(process.cwd(), '..')];
+    const candidates = [
+        // Set by the generated Vercel entry, which copies both files beside
+        // itself because Vercel's tracer cannot see a runtime readFileSync.
+        process.env.HONESTBENCH_ROOT,
+        REPO_ROOT,
+        process.cwd(),
+        resolve(REPO_ROOT, '..'),
+        resolve(process.cwd(), '..'),
+    ].filter((c): c is string => !!c);
     for (const c of candidates) {
         if (existsSync(resolve(c, 'fixture.json')) && existsSync(resolve(c, 'dial.json'))) return c;
     }
